@@ -43,6 +43,16 @@ var Dom = {
    */
   currentHTML: document.documentElement.innerHTML,
 
+    /**
+     * Classes added to body tag on the current page
+     *
+     * Each time a new page is loaded we replace the body tag classes with the returned ones.
+     *
+     * @memberOf Barba.Pjax.Dom
+     * @type {String}
+     */
+    currentBodyClasses: '',
+
   /**
    * Parse the responseText obtained from the xhr call
    *
@@ -59,11 +69,47 @@ var Dom = {
 
     var titleEl = wrapper.querySelector('title');
 
+      this.replaceWithNewBodyId(responseText);
+      this.replaceWithNewBodyClasses(responseText);
+
     if (titleEl)
       document.title = titleEl.textContent;
 
     return this.getContainer(wrapper);
   },
+
+    /**
+     * Replace the body classes on the page with the new classes contained with the string returned from
+     *  the server
+     *
+     * @memberOf Barba.Pjax.Dom
+     * @private
+     * @param  {String} responseText
+     * @return {HTMLElement}
+     */
+    replaceWithNewBodyClasses: function(responseText) {
+      var classReg = /<body.*?class="([^"]*?)".*?>/;
+      var bodyClasses = responseText.match(classReg)[1];
+      this.currentBodyClasses = bodyClasses;
+    },
+
+    /**
+     * Replace the body id on the page with the new id contained with the string returned from
+     *  the server
+     *
+     * @memberOf Barba.Pjax.Dom
+     * @private
+     * @param  {String} responseText
+     * @return {HTMLElement}
+     */
+    replaceWithNewBodyId: function(responseText) {
+      var idReg = /<body.*?id="([^"]*?)".*?>/;
+      var bodyId = responseText.match(idReg);
+      if(bodyId) {
+        bodyId = bodyId[1];
+        document.querySelector('body').id = bodyId;
+      }
+    },
 
   /**
    * Get the main barba wrapper by the ID `wrapperId`
@@ -149,7 +195,69 @@ var Dom = {
    */
   parseContainer: function(element) {
     return element.querySelector('.' + this.containerClass);
+    },
+
+    /**
+     * Get current menu item in nav
+     *
+     * @memberOf Barba.Pjax.Dom
+     * @param  {HTMLElement} elementId
+     */
+    getCurrentMenuItem: function() {
+      // TODO: apply config variables for menu in future
+      var currentMenuItem = document.querySelector('.current-menu-item, .current-page-ancestor');
+      if(currentMenuItem) {
+        return currentMenuItem.id;
+      }
+    },
+
+    /**
+     * Set current menu item in nav
+     *
+     * @memberOf Barba.Pjax.Dom
+     * @param  {HTMLElement} elementId
+     */
+    setCurrentMenuItem: function(elementId) {
+      // TODO: apply config variables for menu in future
+      this.clearCurrentMenuItem();
+      var currentMenuItem = document.getElementById(elementId);
+      if(currentMenuItem) {
+        currentMenuItem.classList.add('current-menu-item');
+      }
+    },
+
+
+    /**
+     * Clear current menu item in nav
+     *
+     * @memberOf Barba.Pjax.Dom
+     */
+    clearCurrentMenuItem:
+
+      function() {
+        // TODO: apply config variables for menu in future
+        var currentMenuItem = document.querySelector('.current-menu-item, .current-page-ancestor');
+        if(currentMenuItem) {
+          currentMenuItem.classList.remove('current-menu-item', 'current-page-ancestor');
+        }
+      }
+
+    ,
+
+    /**
+     * Get id of page
+     *
+     * @memberOf Barba.Pjax.Dom
+     */
+    getPageId: function() {
+      var pageId = document.getElementsByTagName('body')[0].id.trim();
+      if(pageId !== '') {
+        pageId = pageId.match(/\d+$/)[0];
   }
-};
+
+      return pageId;
+    }
+  }
+;
 
 module.exports = Dom;

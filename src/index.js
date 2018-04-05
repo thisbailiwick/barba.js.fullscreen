@@ -10,6 +10,8 @@ var Barba = {
   BaseView: require('./View/BaseView'),
   BaseCache: require('./Cache/BaseCache'),
   Dispatcher: require('./Dispatcher/Dispatcher'),
+  Fscreen: require('fscreen'),
+  FullScreen: require('./Utils/FullScreen'),
   HistoryManager: require('./Pjax/HistoryManager'),
   Pjax: require('./Pjax/Pjax'),
   Prefetch: require('./Pjax/Prefetch'),

@@ -1,5 +1,7 @@
 var Dispatcher = require('../Dispatcher/Dispatcher');
 var Utils = require('../Utils/Utils.js');
+var HistoryManager = require('../Pjax/HistoryManager');
+var Pjax = require('../Pjax/Pjax');
 
 /**
  * BaseView to be extended
@@ -62,6 +64,14 @@ var BaseView  = {
 
         if (oldStatus && oldStatus.namespace === _this.namespace)
           _this.onLeaveCompleted();
+
+        if(HistoryManager.queued_url.length > 0) {
+          // if a url made it to the queue list then it already passed the prevent check process
+
+          var newUrl = HistoryManager.queued_url[0];
+          HistoryManager.queued_url = [];
+          Pjax.goTo(newUrl);
+        }
       }
     );
   },

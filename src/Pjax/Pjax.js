@@ -1,3 +1,4 @@
+var Fscreen = require('fscreen');
 var Utils = require('../Utils/Utils');
 var Dispatcher = require('../Dispatcher/Dispatcher');
 var HideShowTransition = require('../Transition/HideShowTransition');
@@ -66,9 +67,15 @@ var Pjax = {
 
     wrapper.setAttribute('aria-live', 'polite');
 
+    var pageTitle = document.querySelector('title');
+    var loadPageUrl = this.getCurrentUrl();
+    var pageId = this.Dom.getPageId();
+    var currentMenuItemId = this.Dom.getCurrentMenuItem();
+
     this.History.add(
-      this.getCurrentUrl(),
-      this.Dom.getNamespace(container)
+      loadPageUrl,
+      this.Dom.getNamespace(container),
+      pageTitle
     );
 
     //Fire for the current view.
@@ -82,6 +89,18 @@ var Pjax = {
     Dispatcher.trigger('transitionCompleted', this.History.currentStatus());
 
     this.bindEvents();
+
+    Pjax.History.addHistoryToBrowser({
+      url:               loadPageUrl,
+      pageId:            pageId,
+      currentMenuItemId: currentMenuItemId
+    }, pageId, currentMenuItemId);
+
+    //dom should already be loaded here
+    document.querySelector('.fullscreen-toggle').addEventListener('click', function(e) {
+      e.preventDefault();
+      Fscreen.default.requestFullscreen(document.querySelector('.fullscreen'));
+    });
   },
 
   /**
@@ -95,9 +114,11 @@ var Pjax = {
       this.onLinkClick.bind(this)
     );
 
-    window.addEventListener('popstate',
-      this.onStateChange.bind(this)
-    );
+    window.addEventListener('popstate', function(e) {
+      Pjax.History.setPopStateActiveState(true);
+      Pjax.onStateChange(window.location.href, e);
+      Pjax.History.setPageTransitionActiveState(true);
+    });
   },
 
   /**
@@ -119,8 +140,18 @@ var Pjax = {
    * @param {String} newUrl
    */
   goTo: function(url) {
-    window.history.pushState(null, null, url);
-    this.onStateChange();
+    var pageId = this.Dom.getPageId();
+
+    var currentMenuItemId = this.Dom.getCurrentMenuItem();
+    var title = document.querySelector('title').textContent;
+    Pjax.History.addHistoryToBrowser({
+      url:               url,
+      title:             title,
+      currentMenuItemId: currentMenuItemId
+    }, pageId, currentMenuItemId);
+
+    Pjax.History.setPageTransitionActiveState(true);
+    this.onStateChange(url);
   },
 
   /**
@@ -209,6 +240,7 @@ var Pjax = {
    * @param {MouseEvent} evt
    */
   onLinkClick: function(evt) {
+    var FullScreen = require('../Utils/FullScreen');
     var el = evt.target;
 
     //Go up in the nodelist until we
@@ -216,15 +248,27 @@ var Pjax = {
     while (el && !this.getHref(el)) {
       el = el.parentNode;
     }
+    if(el !== null) {
+      var preventCheckResult = this.preventCheck(evt, el);
 
-    if (this.preventCheck(evt, el)) {
+      if(preventCheckResult === 'same-page') {
+        // do nothing
+        evt.preventDefault();
+      } else if(preventCheckResult) {
       evt.stopPropagation();
       evt.preventDefault();
 
       Dispatcher.trigger('linkClicked', el, evt);
 
       var href = this.getHref(el);
+
+
+        if(!FullScreen.fullscreenElement()) {
       this.goTo(href);
+        } else {
+          this.onStateChange(href);
+        }
+      }
     }
   },
 
@@ -241,6 +285,8 @@ var Pjax = {
       return false;
 
     var href = this.getHref(element);
+    var cleanHref = Utils.cleanLink(href);
+    var same_page = cleanHref === Utils.cleanLink(location.href);
 
     //User
     if (!element || !href)
@@ -263,7 +309,7 @@ var Pjax = {
       return false;
 
     //Ignore case when a hash is being tacked on the current URL
-    if (href.indexOf('#') > -1)
+    if(href.indexOf('#') > -1 && same_page)
       return false;
 
     //Ignore case where there is download attribute
@@ -271,10 +317,10 @@ var Pjax = {
       return false;
 
     //In case you're trying to load the same page
-    if (Utils.cleanLink(href) == Utils.cleanLink(location.href))
-      return false;
+    if(same_page)
+      return 'same-page';
 
-    if (element.classList.contains(this.ignoreClassLink))
+    if(element.classList.contains(this.ignoreClassLink) || element.parentNode.classList.contains(this.ignoreClassLink))
       return false;
 
     return true;
@@ -297,18 +343,33 @@ var Pjax = {
    * @memberOf Barba.Pjax
    * @private
    */
-  onStateChange: function() {
-    var newUrl = this.getCurrentUrl();
+  onStateChange: function(newUrl, popStateEvent) {
+    popStateEvent = popStateEvent !== undefined ? popStateEvent : null;
 
-    if (this.transitionProgress)
-      this.forceGoTo(newUrl);
+    if(popStateEvent !== null) {
+      // set the current menu item
+      if(popStateEvent.state) {
+        Dom.setCurrentMenuItem(popStateEvent.state.currentMenuItemId);
+      }
+
+      newUrl = document.location.href;
+    } else if(newUrl === undefined) {
+      newUrl = this.getCurrentUrl();
+    }
+
+    // check if page is in transition and add to queue if so
+    if(this.transitionProgress) {
+      if(newUrl !== this.History.queued_url[0]) {
+        this.History.queued_url[0] = newUrl;
+        return false;
+      }
+    }
 
     if (this.History.currentStatus().url === newUrl)
       return false;
 
-    this.History.add(newUrl);
-
     var newContainer = this.load(newUrl);
+    this.History.add(newUrl, null, document.querySelector('title').textContent);
     var transition = Object.create(this.getTransition());
 
     this.transitionProgress = true;
