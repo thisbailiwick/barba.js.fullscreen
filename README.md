@@ -12,6 +12,7 @@ Demo using the above WordPress plugin: [http://wpbarbafullscreen.thisbailiwick.c
 The demo uses a simple [WP child theme](https://github.com/thisbailiwick/wp.barba.js.fullscreen.demo.theme) which can also help with implementation.
 
 <hr>
+
 **[Examples](#unique-issues) of unique issues for fullscreen implementation.**
 
 — Any javascript used on page load needs to be called from or moved to the [transition object events](http://barbajs.org/transition.html).
@@ -28,6 +29,7 @@ From MDN:
 The link to the W3C CSSWG issue may have further information or workarounds but I haven't looked into it further.
 
 <hr>
+
 **How to use:**
 
 * Add files in `/dist` to your site.
