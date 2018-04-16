@@ -13,7 +13,7 @@ The demo uses a simple [WP child theme](https://github.com/thisbailiwick/wp.barb
 
 <hr>
 
-**[Examples](#unique-issues) of unique issues for fullscreen implementation.**
+**Examples of unique issues for fullscreen implementation.**
 
 — Any javascript used on page load needs to be called from or moved to the [transition object events](http://barbajs.org/transition.html).
 
