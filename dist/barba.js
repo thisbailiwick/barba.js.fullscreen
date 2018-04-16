@@ -1811,10 +1811,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, pageId, currentMenuItemId);
 	
 	    //dom should already be loaded here
-	    document.querySelector('.fullscreen-toggle').addEventListener('click', function(e) {
-	      e.preventDefault();
-	      Fscreen.default.requestFullscreen(document.querySelector('.fullscreen'));
-	    });
+		  if(Fscreen.default.fullscreenEnabled){
+	      document.querySelector('.fullscreen-toggle').addEventListener('click', function(e) {
+	        e.preventDefault();
+	        Fscreen.default.requestFullscreen(document.querySelector('.fullscreen'));
+	      });
+	    }
 	  },
 	
 	  /**
