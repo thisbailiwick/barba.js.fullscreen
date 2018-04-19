@@ -35,3 +35,10 @@ The link to the W3C CSSWG issue may have further information or workarounds but 
 * Add files in `/dist` to your site.
 * Add `fullscreen` class to a dom element. This will be the element used when requesting fullscreen. [Example code](https://github.com/thisbailiwick/wp.barba.js.fullscreen.demo.theme/blob/master/header.php).
 * Add some js to spin up Barba.js.fullscreen. [Example code](https://github.com/thisbailiwick/wp.barba.js.fullscreen.demo.theme/blob/master/main.js).
+
+**Options different from barba.js**
+`showFullscreenModal`
+* boolean
+* default `false`
+* setting this to true will trigger Barba.js.fullscreen to display a modal on a user's first time visiting the site. The modal will ask the user if they want to view the site in fullscreen mode. A permanent cookie will be saved based on the response. In addition and session cookie will be saved with the response. If a user selects to view in fullscreen mode the view goes fullscreen and on further visits once the session cookie no longer exists the same modal will show. If a user selects not to go into fullscreen mode no modal is shown in further visits. However, if they at any point click any button to go into fullscreen the permanent and session cookies will be changed so that in further visits the modal will show.
+* Example: `Barba.Pjax.start({ showFullscreenModal: true });`

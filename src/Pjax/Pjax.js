@@ -51,8 +51,13 @@ var Pjax = {
    *
    * @memberOf Barba.Pjax
    */
-  start: function() {
-    this.init();
+  start: function(options) {
+  	options = typeof options !== 'undefined' ? options : {};
+  	options = {
+	    showFullscreenModal: typeof options.showFullscreenModal !== 'undefined' ? options.showFullscreenModal : false
+    };
+
+    this.init(options);
   },
 
   /**
@@ -61,9 +66,10 @@ var Pjax = {
    * @memberOf Barba.Pjax
    * @private
    */
-  init: function() {
+  init: function(options) {
     var container = this.Dom.getContainer();
     var wrapper = this.Dom.getWrapper();
+    var FullScreen = require('../Utils/FullScreen');
 
     wrapper.setAttribute('aria-live', 'polite');
 
@@ -100,8 +106,12 @@ var Pjax = {
 	  if(Fscreen.default.fullscreenEnabled){
       document.querySelector('.fullscreen-toggle').addEventListener('click', function(e) {
         e.preventDefault();
-        Fscreen.default.requestFullscreen(document.querySelector('.fullscreen'));
+        FullScreen.goFullScreen();
       });
+
+      if(options.showFullscreenModal === true){
+        FullScreen.applyFullscreenModal();
+      }
     }
   },
 
