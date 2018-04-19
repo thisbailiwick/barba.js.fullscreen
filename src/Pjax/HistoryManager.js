@@ -59,7 +59,7 @@ var HistoryManager = {
     var isFullScreen = FullScreen.fullscreenElement();
     var pageId = Dom.getPageId();
     var currentMenuItemId = Dom.getCurrentMenuItem();
-    var yOffset = isFullScreen ? document.getElementById('wrapper').getBoundingClientRect().top : window.scrollY;
+    var yOffset = isFullScreen ? document.querySelector('.fullscreen-wrapper').getBoundingClientRect().top : window.scrollY;
 
     if (!namespace)
       namespace = undefined;

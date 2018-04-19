@@ -1254,7 +1254,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var isFullScreen = FullScreen.fullscreenElement();
 	    var pageId = Dom.getPageId();
 	    var currentMenuItemId = Dom.getCurrentMenuItem();
-	    var yOffset = isFullScreen ? document.getElementById('wrapper').getBoundingClientRect().top : window.scrollY;
+	    var yOffset = isFullScreen ? document.querySelector('.fullscreen-wrapper').getBoundingClientRect().top : window.scrollY;
 	
 	    if (!namespace)
 	      namespace = undefined;
@@ -2185,7 +2185,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return new Promise(function (resolve, reject) {
 	      _this.fadeElementOut(_this.oldContainer).then(function () {
 	        if (HistoryManager.activePopStateEvent === false) {
-	          document.getElementById('wrapper').scrollIntoView();
+	          document.querySelector('.fullscreen-wrapper').scrollIntoView();
 	        } else if (Barba.FullScreen.fullscreenElement()) {
 	          // Here we're getting the scroll position of the next to last element in Barba.HistoryManager.history. The last element being the page we are currently on, next to last being the one we're going to (whether it's a forwards or backwards popstateevent).
 	          HideShowTransition.fullscreenSetScrollPosition(Math.abs(HistoryManager.history[HistoryManager.history.length - 2].scrollPosition));
