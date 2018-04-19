@@ -1,4 +1,3 @@
-var Fscreen = require('fscreen');
 var Utils = require('../Utils/Utils');
 var Dispatcher = require('../Dispatcher/Dispatcher');
 var HideShowTransition = require('../Transition/HideShowTransition');
@@ -102,17 +101,7 @@ var Pjax = {
       currentMenuItemId: currentMenuItemId
     }, pageId, currentMenuItemId);
 
-    //dom should already be loaded here
-	  if(Fscreen.default.fullscreenEnabled){
-      document.querySelector('.fullscreen-toggle').addEventListener('click', function(e) {
-        e.preventDefault();
-        FullScreen.goFullScreen();
-      });
-
-      if(options.showFullscreenModal === true){
-        FullScreen.applyFullscreenModal();
-      }
-    }
+    FullScreen.initFullScreen(options);
   },
 
   /**

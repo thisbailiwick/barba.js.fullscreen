@@ -1634,6 +1634,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	  fullScreenOnChangeEvent: function() {
 	
 	  },
+		initFullScreen: function(options){
+			//dom should already be loaded here
+			if(Fscreen.default.fullscreenEnabled){
+				document.querySelector('body').classList.add('fullscreen-capable');
+				this.setFullScreenToggle();
+				this.preference = options.showFullscreenModal
+				this.initFullscreenModal();
+			}else{
+				//browser is not capable
+				document.querySelector('.fullscreen-toggle').style.display = 'none';
+			}
+		},
+		setFullScreenToggle: function(){
+			document.querySelector('.fullscreen-toggle').addEventListener('click', function(e) {
+				e.preventDefault();
+				FullScreen.goFullScreen();
+			});
+		},
 	  replaceBodyClasses:      function() {
 	    var body = document.getElementsByTagName('body')[0];
 	    body.className = Dom.currentBodyClasses;
@@ -1643,6 +1661,11 @@ return /******/ (function(modules) { // webpackBootstrap
 			if(this.preference === false){
 				this.preference = true;
 				this.setFullscreenYesCookies();
+			}
+		},
+		initFullscreenModal: function(){
+			if(this.preference === true){
+				FullScreen.applyFullscreenModal();
 			}
 		},
 	  applyFullscreenModal: function(){
@@ -1990,7 +2013,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var Fscreen = __webpack_require__(12);
 	var Utils = __webpack_require__(6);
 	var Dispatcher = __webpack_require__(8);
 	var HideShowTransition = __webpack_require__(15);
@@ -2094,17 +2116,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      currentMenuItemId: currentMenuItemId
 	    }, pageId, currentMenuItemId);
 	
-	    //dom should already be loaded here
-		  if(Fscreen.default.fullscreenEnabled){
-	      document.querySelector('.fullscreen-toggle').addEventListener('click', function(e) {
-	        e.preventDefault();
-	        FullScreen.goFullScreen();
-	      });
-	
-	      if(options.showFullscreenModal === true){
-	        FullScreen.applyFullscreenModal();
-	      }
-	    }
+	    FullScreen.initFullScreen(options);
 	  },
 	
 	  /**
