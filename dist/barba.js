@@ -1625,14 +1625,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	
 	var FullScreen = {
-	  currentUrl:              null,
+	  currentUrl: null,
 		preference: false,
-		modal: null,
+	  modal: null,
+	  isFullscreen: false,
 	  fullscreenElement:       function() {
 	    return Fscreen.default.fullscreenElement !== null;
 	  },
 	  fullScreenOnChangeEvent: function() {
-	
+	    this.isFullscreen = !this.isFullscreen;
 	  },
 		initFullScreen: function(options){
 			//dom should already be loaded here
@@ -1683,6 +1684,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						width: 100%;\
 						text-align: center;\
 						top: 0;\
+	          z-index: 100;\
 					}\
 					\
 					.fullscreen-modal.show{\
@@ -1767,7 +1769,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	};
 	
-	Fscreen.default.addEventListener('fullscreenchange', FullScreen.fullScreenOnChangeEvent, false);
+	Fscreen.default.addEventListener('fullscreenchange', FullScreen.fullScreenOnChangeEvent.bind(FullScreen), false);
 	module.exports = FullScreen;
 
 
