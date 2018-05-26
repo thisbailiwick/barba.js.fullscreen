@@ -54,11 +54,11 @@ var HideShowTransition = BaseTransition.extend({
 
 
     var el = this.newContainer;
-
+	  var originalDisplayValue = el.currentStyle ? el.currentStyle.display : getComputedStyle(el, null).display;
     el.style.display = 'none';
     el.style.opacity = 0;
     el.style.visibility = 'visible';
-    this.fadeElementIn(el).then(function () {
+    this.fadeElementIn(el, originalDisplayValue).then(function () {
       if (Barba.FullScreen.fullscreenElement() === false) {
         if (window.location.hash !== '') {
           HideShowTransition.goTo(document.querySelector('#' + window.location.hash));
