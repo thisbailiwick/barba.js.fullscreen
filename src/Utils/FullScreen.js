@@ -1,6 +1,9 @@
 var Fscreen = require('fscreen');
 var Dom = require('../Pjax/Dom');
 var Cookies = require('js-cookie');
+var CustomEvent = require('custom-event');
+var smoothscroll = require('smoothscroll-polyfill');
+// var Utils = require('./Utils');
 
 /**
  * Implements fscreen for fullscreen functionalities
@@ -11,50 +14,101 @@ var Cookies = require('js-cookie');
 
 var FullScreen = {
   currentUrl: null,
-	preference: false,
+  // use modal
+  preference: false,
+  // use manual calling of modal
   modal: null,
   isFullscreen: false,
-  fullscreenElement:       function() {
-    return Fscreen.default.fullscreenElement !== null;
-  },
-  fullScreenOnChangeEvent: function() {
+  fullScreenChangeEvent: new CustomEvent('fullscreenChange'),
+  browserSupportsFullscreen: false,
+  scrollToElement: null,
+  fullscreenElement: document.querySelector('.fullscreen'),
+  fullScreenOnChangeEvent: function () {
     this.isFullscreen = !this.isFullscreen;
+
+    if (this.scrollToElement !== null) {
+      Barba.Utils.scrollToElement(this.scrollToElement, false);
+      this.scrollToElement = null;
+    }
+
+    document.dispatchEvent(
+      new CustomEvent('barbaFullscreenOnChange', {
+        bubbles: false,
+        cancelable: false
+      })
+    );
   },
-	initFullScreen: function(options){
-		//dom should already be loaded here
-		if(Fscreen.default.fullscreenEnabled){
-			document.querySelector('body').classList.add('fullscreen-capable');
-			this.setFullScreenToggle();
-			this.preference = options.showFullscreenModal
-			this.initFullscreenModal();
-		}else{
-			//browser is not capable
-			document.querySelector('.fullscreen-toggle').style.display = 'none';
-		}
-	},
-	setFullScreenToggle: function(){
-		document.querySelector('.fullscreen-toggle').addEventListener('click', function(e) {
-			e.preventDefault();
-			FullScreen.goFullScreen();
-		});
-	},
-  replaceBodyClasses:      function() {
+  initFullScreen: function (options) {
+    //dom should already be loaded here
+    smoothscroll.polyfill();
+    if (Fscreen.default.fullscreenEnabled) {
+      this.browserSupportsFullscreen = true;
+      document.querySelector('body').classList.add('fullscreen-capable');
+      this.setFullScreenToggle();
+      this.preference = options.showFullscreenModal;
+      if (this.preference === true) {
+        this.manualModal = options.manualModal;
+        this.manualFullScreenToggle = options.manualFullScreenToggle;
+      }
+      this.initFullscreenModal();
+
+      Fscreen.default.addEventListener('fullscreenchange', FullScreen.fullScreenOnChangeEvent.bind(FullScreen), false);
+    } else {
+      //browser is not capable
+      document.querySelector('.fullscreen-toggle').style.display = 'none';
+      document.querySelector('body').classList.add('no-fullscreen');
+    }
+  },
+  setFullScreenToggle: function () {
+    document.querySelector('.fullscreen-toggle').addEventListener('click', function (e) {
+      e.preventDefault();
+      if (FullScreen.isFullscreen) {
+        Fscreen.default.exitFullscreen();
+      } else {
+        FullScreen.goFullScreen();
+      }
+    });
+  },
+
+  replaceBodyClasses: function () {
     var body = document.getElementsByTagName('body')[0];
-    body.className = Dom.currentBodyClasses;
+    var additional_classes = '';
+    if (FullScreen.browserSupportsFullscreen === false) {
+      additional_classes = ' no-fullscreen'
+    }
+    body.className = Dom.currentBodyClasses + additional_classes;
   },
-	goFullScreen: function(){
-		Fscreen.default.requestFullscreen(document.querySelector('.fullscreen'));
-		if(this.preference === false){
-			this.preference = true;
-			this.setFullscreenYesCookies();
-		}
-	},
-	initFullscreenModal: function(){
-		if(this.preference === true){
-			FullScreen.applyFullscreenModal();
-		}
-	},
-  applyFullscreenModal: function(){
+
+  // all fullscreen requests should go through this function
+  goFullScreen: function () {
+    this.enterFullScreen();
+    if (this.preference === false) {
+      this.preference = true;
+      this.setFullscreenYesCookies();
+    }
+  },
+
+  initFullscreenModal: function () {
+    if (this.preference === true) {
+      FullScreen.applyFullscreenModal();
+    }
+  },
+
+  toggleModal: function () {
+    this.modal.classList.toggle('show');
+  },
+
+  showModal: function () {
+    this.modal = document.querySelector('.fullscreen-modal');
+    var buttonYes = this.modal.querySelector('.fullscreen-yes');
+    var buttonNo = this.modal.querySelector('.fullscreen-no');
+
+    this.toggleModal();
+
+    this.setModalButtonEvents(buttonYes, buttonNo);
+  },
+
+  applyFullscreenModal: function () {
     // create fullscreen modal html
     var modalHtml = '\
 			<style type="text/css">\
@@ -92,67 +146,102 @@ var FullScreen = {
     	</div>\
 ';
     // add hidden html to page
-	  document.querySelector('.fullscreen').insertAdjacentHTML('beforeend', modalHtml);
+    this.fullscreenElement.insertAdjacentHTML('beforeend', modalHtml);
     // check if user has cookies, permanent and session
-	  var showModal = this.shouldShowModal();
-    if(showModal){
-	    this.modal = document.querySelector('.fullscreen-modal');
-	    var buttonYes = this.modal.querySelector('.fullscreen-yes');
-	    var buttonNo = this.modal.querySelector('.fullscreen-no');
+    var showModal = this.shouldShowModal();
 
-	    this.modal.classList.toggle('show');
-
-	    this.setModalButtonEvents(buttonYes, buttonNo)
+    if (showModal && this.manualModal === false) {
+      this.showModal();
     }
   },
-	shouldShowModal: function(){
-  	// check if session cookie
-		var sessionCookie = Cookies.get('fullscreen-session');
-		if(sessionCookie !== undefined){
-			return sessionCookie === 'true';
-		}
 
-		// if no session cookie check for permanent cookie
-		if(sessionCookie === undefined){
-			var permanentCookie = Cookies.get('fullscreen-permanent');
-			if(permanentCookie !== undefined){
-				return permanentCookie === 'true';
-			}
-		}
+  shouldShowModal: function () {
+    // check if session cookie
+    var sessionCookie = Cookies.get('fullscreen-session');
+    if (sessionCookie !== undefined) {
+      return sessionCookie === 'true';
+    }
 
-		// if we get here, we show modal
-		return true;
+    // if no session cookie check for permanent cookie
+    if (sessionCookie === undefined) {
+      var permanentCookie = Cookies.get('fullscreen-permanent');
+      if (permanentCookie !== undefined) {
+        return permanentCookie === 'true';
+      }
+    }
 
-	},
-	setModalButtonEvents: function(buttonYes, buttonNo){
-  	buttonYes.addEventListener('click', this.fullscreenYes.bind(this) );
-  	buttonNo.addEventListener('click', this.fullscreenNo.bind(this) );
-	},
-	fullscreenYes: function(){
-  	//hide modal
-		this.modal.classList.toggle('show');
-		Fscreen.default.requestFullscreen(document.querySelector('.fullscreen'));
-		this.setFullscreenYesCookies();
-	},
-	fullscreenNo: function(){
-		//hide modal
-		this.modal.classList.toggle('show');
-  	this.setFullscreenNoCookies();
-	},
-	setFullscreenYesCookies: function(){
-  	// set permanent
-		Cookies.set('fullscreen-permanent', true, { expires: 365 });
-		// set session
-		Cookies.set('fullscreen-session', true);
-	},
-	setFullscreenNoCookies: function(){
-		// set permanent
-		Cookies.set('fullscreen-permanent', false, { expires: 365 });
-		// set session
-		Cookies.set('fullscreen-session', false);
-	}
+    // if we get here, we show modal
+    return true;
+
+  },
+
+  setModalButtonEvents: function (buttonYes, buttonNo) {
+    buttonYes.addEventListener('click', this.fullscreenYes.bind(this));
+    buttonNo.addEventListener('click', this.fullscreenNo.bind(this));
+  },
+
+  enterFullScreen: function () {
+    // get element at top of page
+    var element = document.elementFromPoint(window.innerWidth / 2, 0);
+    // go full screen
+    Fscreen.default.requestFullscreen(FullScreen.fullscreenElement);
+    // scroll to saved scroll position
+    // ScrollToElement(element, {
+    //   offset: 0,
+    //   ease: 'out-bounce',
+    //   duration: 500
+    // });
+    // Utils.scrollToElement(element);
+    this.scrollToElement = element;
+  },
+
+  fullscreenYes: function () {
+    if (this.manualFullScreenToggle === false) {
+      //hide modal
+      this.toggleModal();
+      this.goFullScreen();
+    } else {
+      // trigger custom yes event
+      document.dispatchEvent(
+        new CustomEvent('barbaFullScreenPreferenceYes', {
+          bubbles: false,
+          cancelable: false
+        })
+      );
+    }
+    this.setFullscreenYesCookies();
+  },
+
+  fullscreenNo: function () {
+    if (this.manualFullScreenToggle === false) {
+      //hide modal
+      this.toggleModal();
+    } else {
+      // trigger custom no event
+      document.dispatchEvent(
+        new CustomEvent('barbaFullScreenPreferenceNo', {
+          bubbles: false,
+          cancelable: false
+        })
+      );
+    }
+    this.setFullscreenNoCookies();
+  },
+
+  setFullscreenYesCookies: function () {
+    // set permanent
+    Cookies.set('fullscreen-permanent', true, {expires: 365});
+    // set session
+    Cookies.set('fullscreen-session', true);
+  },
+
+  setFullscreenNoCookies: function () {
+    // set permanent
+    Cookies.set('fullscreen-permanent', false, {expires: 365});
+    // set session
+    Cookies.set('fullscreen-session', false);
+  }
 
 };
 
-Fscreen.default.addEventListener('fullscreenchange', FullScreen.fullScreenOnChangeEvent.bind(FullScreen), false);
 module.exports = FullScreen;

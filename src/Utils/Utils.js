@@ -1,3 +1,6 @@
+var Cookies = require('js-cookie');
+var FullScreen = require('./FullScreen');
+
 /**
  * Just an object with some helpful functions
  *
@@ -11,11 +14,11 @@ var Utils = {
    * @memberOf Barba.Utils
    * @return {String} currentUrl
    */
-  getCurrentUrl: function() {
+  getCurrentUrl: function () {
     return window.location.protocol + '//' +
-           window.location.host +
-           window.location.pathname +
-           window.location.search;
+      window.location.host +
+      window.location.pathname +
+      window.location.search;
   },
 
   /**
@@ -26,7 +29,7 @@ var Utils = {
    * @param  {String} url
    * @return {String} newCleanUrl
    */
-  cleanLink: function(url) {
+  cleanLink: function (url) {
     return url.replace(/#.*/, '');
   },
 
@@ -46,11 +49,11 @@ var Utils = {
    * @param  {String} url
    * @return {Promise}
    */
-  xhr: function(url) {
+  xhr: function (url) {
     var deferred = this.deferred();
     var req = new XMLHttpRequest();
 
-    req.onreadystatechange = function() {
+    req.onreadystatechange = function () {
       if (req.readyState === 4) {
         if (req.status === 200) {
           return deferred.resolve(req.responseText);
@@ -60,7 +63,7 @@ var Utils = {
       }
     };
 
-    req.ontimeout = function() {
+    req.ontimeout = function () {
       return deferred.reject(new Error('xhr: Timeout exceeded'));
     };
 
@@ -80,11 +83,11 @@ var Utils = {
    * @param  {object} props
    * @return {object}
    */
-  extend: function(obj, props) {
+  extend: function (obj, props) {
     var newObj = Object.create(obj);
 
-    for(var prop in props) {
-      if(props.hasOwnProperty(prop)) {
+    for (var prop in props) {
+      if (props.hasOwnProperty(prop)) {
         newObj[prop] = props[prop];
       }
     }
@@ -99,12 +102,12 @@ var Utils = {
    * @memberOf Barba.Utils
    * @return {Deferred}
    */
-  deferred: function() {
-    return new function() {
+  deferred: function () {
+    return new function () {
       this.resolve = null;
       this.reject = null;
 
-      this.promise = new Promise(function(resolve, reject) {
+      this.promise = new Promise(function (resolve, reject) {
         this.resolve = resolve;
         this.reject = reject;
       }.bind(this));
@@ -119,8 +122,10 @@ var Utils = {
    * @param  {String} p
    * @return {Int} port
    */
-  getPort: function(p) {
-    var port = typeof p !== 'undefined' ? p : window.location.port;
+  getPort: function (p) {
+    var port = typeof p !== 'undefined'
+      ? p
+      : window.location.port;
     var protocol = window.location.protocol;
 
     if (port != '')
@@ -131,6 +136,95 @@ var Utils = {
 
     if (protocol === 'https:')
       return 443;
+  },
+
+  /**
+   * Get the paramater/query of a url by name
+   *
+   * @memberOf Barba.Utils
+   * @private
+   * @param  {String} name
+   * @param  {String} url
+   * @return {String} value
+   */
+  getParameterByName: function (name, url) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+      results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+  },
+
+  /**
+   * Check to see if url has query added to set cookie
+   *
+   * @memberOf Barba.Utils
+   * @private
+   * @param  {String} query name
+   * @return {String} url
+   */
+  urlCookieSetCheck: function (url) {
+    var results = this.getParameterByName('cookie', url);
+    if (results !== '' || results !== null) {
+      Cookies.set(results, true, {expires: 365});
+    }
+  },
+
+  getElementTop: function (element) {
+    var top = 0;
+    do {
+      top += element.offsetTop || 0;
+      element = element.offsetParent;
+    } while (element);
+    return top;
+  },
+
+  getElementMiddle: function (element) {
+
+    var elementHeight = element.clientHeight;
+    var top = this.getElementTop(element);
+
+    var scrollingWrapHeight = null;
+    /* eslint-disable */
+    if (FullScreen.isFullscreen) {
+      /* eslint-enable */
+      // use fullscreen
+      scrollingWrapHeight = FullScreen.fullscreenElement.clientHeight;
+    } else {
+      // use window
+      scrollingWrapHeight = window.innerHeight;
+    }
+
+    return top - ((scrollingWrapHeight - elementHeight) / 2);
+
+  },
+
+  scrollToByPixels: function (scrollAmount) {
+    if (FullScreen.isFullscreen) {
+      FullScreen.fullscreenElement.scrollTo({top: scrollAmount, left: 0, behavior: 'smooth'});
+    } else {
+      window.scrollTo({top: scrollAmount, left: 0, behavior: 'smooth'});
+    }
+  },
+
+  /**
+   * Scroll to an elements top or middle
+   *
+   * @memberOf Barba.Utils
+   * @private
+   * @param  {Dom Element} element
+   * @param  {Boolean} middle
+   *
+   */
+  scrollToElement: function (element, middle) {
+    var scrollAmount = 0;
+    if(middle === true){
+      scrollAmount = this.getElementMiddle(element);
+    }else{
+      scrollAmount = this.getElementTop(element);
+    }
+    this.scrollToByPixels(scrollAmount);
   }
 };
 

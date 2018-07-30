@@ -53,7 +53,9 @@ var Pjax = {
   start: function(options) {
   	options = typeof options !== 'undefined' ? options : {};
   	options = {
-	    showFullscreenModal: typeof options.showFullscreenModal !== 'undefined' ? options.showFullscreenModal : false
+	    showFullscreenModal: typeof options.showFullscreenModal !== 'undefined' ? options.showFullscreenModal : false,
+		  manualModal: typeof options.manualModal !== 'undefined' ? options.manualModal : false,
+		  manualFullScreenToggle: typeof options.manualFullScreenToggle !== 'undefined' ? options.manualFullScreenToggle : false,
     };
 
     this.init(options);
@@ -264,7 +266,7 @@ var Pjax = {
       var href = this.getHref(el);
 
 
-        if(!FullScreen.fullscreenElement()) {
+        if(!FullScreen.isFullscreen) {
       this.goTo(href);
         } else {
           this.onStateChange(href);
@@ -369,6 +371,8 @@ var Pjax = {
     if (this.History.currentStatus().url === newUrl)
       return false;
 
+    // check for cookie before loading
+		Utils.urlCookieSetCheck(newUrl);
     var newContainer = this.load(newUrl);
     this.History.add(newUrl, null, document.querySelector('title').textContent);
     var transition = Object.create(this.getTransition());

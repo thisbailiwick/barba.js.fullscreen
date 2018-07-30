@@ -33,7 +33,7 @@ var HideShowTransition = BaseTransition.extend({
       _this.fadeElementOut(_this.oldContainer).then(function () {
         if (HistoryManager.activePopStateEvent === false) {
           document.querySelector('.fullscreen-wrapper').scrollIntoView();
-        } else if (Barba.FullScreen.fullscreenElement()) {
+        } else if (Barba.FullScreen.isFullscreen) {
           // Here we're getting the scroll position of the next to last element in Barba.HistoryManager.history. The last element being the page we are currently on, next to last being the one we're going to (whether it's a forwards or backwards popstateevent).
           HideShowTransition.fullscreenSetScrollPosition(Math.abs(HistoryManager.history[HistoryManager.history.length - 2].scrollPosition));
         }
@@ -59,7 +59,7 @@ var HideShowTransition = BaseTransition.extend({
     el.style.opacity = 0;
     el.style.visibility = 'visible';
     this.fadeElementIn(el, originalDisplayValue).then(function () {
-      if (Barba.FullScreen.fullscreenElement() === false) {
+      if (Barba.FullScreen.isFullscreen === false) {
         if (window.location.hash !== '') {
           HideShowTransition.goTo(document.querySelector('#' + window.location.hash));
         }

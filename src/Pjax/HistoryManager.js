@@ -56,7 +56,7 @@ var HistoryManager = {
   add: function(url, namespace, pageTitle) {
     var FullScreen = require('../Utils/FullScreen');
     // send a page load event to google analytics
-    var isFullScreen = FullScreen.fullscreenElement();
+    var isFullScreen = FullScreen.isFullscreen;
     var pageId = Dom.getPageId();
     var currentMenuItemId = Dom.getCurrentMenuItem();
     var yOffset = isFullScreen ? document.querySelector('.fullscreen-wrapper').getBoundingClientRect().top : window.scrollY;
