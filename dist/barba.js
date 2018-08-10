@@ -1321,6 +1321,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (this.preference === true) {
 	        this.manualModal = options.manualModal;
 	        this.manualFullScreenToggle = options.manualFullScreenToggle;
+	        this.showModalOnNewSession = options.showModalOnNewSession;
 	      }
 	      this.initFullscreenModal();
 	
@@ -1422,7 +1423,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // check if user has cookies, permanent and session
 	    var showModal = this.shouldShowModal();
 	
-	    if (showModal && this.manualModal === false) {
+	    if (showModal && this.manualModal === false || showModal && this.showModalOnNewSession === true) {
 	      this.showModal();
 	    }
 	  },
@@ -2755,6 +2756,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  	options = {
 		    showFullscreenModal: typeof options.showFullscreenModal !== 'undefined' ? options.showFullscreenModal : false,
 			  manualModal: typeof options.manualModal !== 'undefined' ? options.manualModal : false,
+	      showModalOnNewSession: typeof options.showModalOnNewSession !== 'undefined' ? options.showModalOnNewSession : false,
 			  manualFullScreenToggle: typeof options.manualFullScreenToggle !== 'undefined' ? options.manualFullScreenToggle : false,
 	    };
 	

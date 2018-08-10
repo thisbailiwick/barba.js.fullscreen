@@ -49,6 +49,7 @@ var FullScreen = {
       if (this.preference === true) {
         this.manualModal = options.manualModal;
         this.manualFullScreenToggle = options.manualFullScreenToggle;
+        this.showModalOnNewSession = options.showModalOnNewSession;
       }
       this.initFullscreenModal();
 
@@ -150,7 +151,7 @@ var FullScreen = {
     // check if user has cookies, permanent and session
     var showModal = this.shouldShowModal();
 
-    if (showModal && this.manualModal === false) {
+    if (showModal && this.manualModal === false || showModal && this.showModalOnNewSession === true) {
       this.showModal();
     }
   },
