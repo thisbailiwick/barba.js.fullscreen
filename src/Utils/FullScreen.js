@@ -49,7 +49,7 @@ var FullScreen = {
       if (this.preference === true) {
         this.manualModal = options.manualModal;
         this.manualFullScreenToggle = options.manualFullScreenToggle;
-        this.showModalOnNewSession = options.showModalOnNewSession;
+        this.showingSplash = options.showingSplash;
       }
       this.initFullscreenModal();
 
@@ -83,10 +83,7 @@ var FullScreen = {
   // all fullscreen requests should go through this function
   goFullScreen: function () {
     this.enterFullScreen();
-    if (this.preference === false) {
-      this.preference = true;
-      this.setFullscreenYesCookies();
-    }
+    this.removeFullscreenNoCookies();
   },
 
   initFullscreenModal: function () {
@@ -151,24 +148,18 @@ var FullScreen = {
     // check if user has cookies, permanent and session
     var showModal = this.shouldShowModal();
 
-    if (showModal && this.manualModal === false || showModal && this.showModalOnNewSession === true) {
+    if (showModal && this.manualModal === false ||
+      showModal && this.showingSplash === true && Cookies.get('splashseen') === 'true'
+    ) {
       this.showModal();
     }
   },
 
   shouldShowModal: function () {
-    // check if session cookie
-    var sessionCookie = Cookies.get('fullscreen-session');
-    if (sessionCookie !== undefined) {
-      return sessionCookie === 'true';
-    }
-
-    // if no session cookie check for permanent cookie
-    if (sessionCookie === undefined) {
-      var permanentCookie = Cookies.get('fullscreen-permanent');
-      if (permanentCookie !== undefined) {
-        return permanentCookie === 'true';
-      }
+    // if fullscreen-permanent cookie
+    var permanentCookie = Cookies.get('fullscreen-permanent');
+    if (permanentCookie !== undefined) {
+      return permanentCookie === 'true';
     }
 
     // if we get here, we show modal
@@ -186,13 +177,6 @@ var FullScreen = {
     var element = document.elementFromPoint(window.innerWidth / 2, 0);
     // go full screen
     Fscreen.default.requestFullscreen(FullScreen.fullscreenElement);
-    // scroll to saved scroll position
-    // ScrollToElement(element, {
-    //   offset: 0,
-    //   ease: 'out-bounce',
-    //   duration: 500
-    // });
-    // Utils.scrollToElement(element);
     this.scrollToElement = element;
   },
 
@@ -229,18 +213,13 @@ var FullScreen = {
     this.setFullscreenNoCookies();
   },
 
-  setFullscreenYesCookies: function () {
-    // set permanent
-    Cookies.set('fullscreen-permanent', true, {expires: 365});
-    // set session
-    Cookies.set('fullscreen-session', true);
-  },
-
   setFullscreenNoCookies: function () {
     // set permanent
     Cookies.set('fullscreen-permanent', false, {expires: 365});
-    // set session
-    Cookies.set('fullscreen-session', false);
+  },
+
+  removeFullscreenNoCookies: function () {
+    Cookies.remove('fullscreen-permanent');
   }
 
 };

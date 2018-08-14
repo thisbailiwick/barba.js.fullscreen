@@ -55,8 +55,8 @@ var Pjax = {
   	options = {
 	    showFullscreenModal: typeof options.showFullscreenModal !== 'undefined' ? options.showFullscreenModal : false,
 		  manualModal: typeof options.manualModal !== 'undefined' ? options.manualModal : false,
-      showModalOnNewSession: typeof options.showModalOnNewSession !== 'undefined' ? options.showModalOnNewSession : false,
 		  manualFullScreenToggle: typeof options.manualFullScreenToggle !== 'undefined' ? options.manualFullScreenToggle : false,
+      showingSplash: typeof options.showingSplash !== 'undefined' ? options.showingSplash : false,
     };
 
     this.init(options);
