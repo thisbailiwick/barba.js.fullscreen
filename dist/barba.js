@@ -1466,7 +1466,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        })
 	      );
 	    }
-	    this.setFullscreenYesCookies();
 	  },
 	
 	  fullscreenNo: function () {

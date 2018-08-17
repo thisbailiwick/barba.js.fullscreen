@@ -194,7 +194,6 @@ var FullScreen = {
         })
       );
     }
-    this.setFullscreenYesCookies();
   },
 
   fullscreenNo: function () {
