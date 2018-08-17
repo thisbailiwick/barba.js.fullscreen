@@ -13,7 +13,7 @@ The demo uses a simple [WP child theme](https://github.com/thisbailiwick/wp.barb
 
 <hr>
 
-###Examples of unique issues for fullscreen implementation.
+### Examples of unique issues for fullscreen implementation.
 
 — Any javascript used on page load needs to be called from or moved to the [transition object events](http://barbajs.org/transition.html).
 
@@ -30,7 +30,7 @@ The link to the W3C CSSWG issue may have further information or workarounds but 
 
 <hr>
 
-###How to use:
+### How to use:
 
 * Add files in `/dist` to your site.
 * Add `fullscreen` class to a dom element. This will be the element used when requesting fullscreen. [Example code](https://github.com/thisbailiwick/wp.barba.js.fullscreen.demo.theme/blob/master/header.php).
@@ -38,9 +38,9 @@ The link to the W3C CSSWG issue may have further information or workarounds but 
 
 <hr>
 
-###Notes on use:
+### Notes on use:
 
-#####Fullscreen Query Modal
+#### Fullscreen Query Modal
 Barba.js.fullscreen includes a fullscreen query modal which can be shown when a user first visits the site. This modal asks if the user wants to go fullscreen. 
 
 If the user does not want to a browser cookie with the name `fullscreen-permanent` is added with a `false` value. No further checks will be made.
@@ -52,7 +52,7 @@ The `fullscreen-permanent` cookie with `false` value will be removed if a user g
 Also note the `manualModal` option below.
 
 
-#####Options different from barba.js
+#### Options different from barba.js
 
 **`showFullscreenModal`**
 * boolean
